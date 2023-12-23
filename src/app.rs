@@ -11,6 +11,6 @@ pub trait AppModule {
         app_id
     }
 
-    #[storage_mapper("app_ids")]
+    #[storage_mapper("app:ids")]
     fn app_ids(&self) -> AddressToIdMapper<Self::Api>;
 }

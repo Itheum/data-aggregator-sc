@@ -25,6 +25,6 @@ pub trait DelegateModule: app::AppModule + category::CategoryModule {
         // TODO: implement
     }
 
-    #[storage_mapper("delegations")]
+    #[storage_mapper("delegate:delegations")]
     fn delegations(&self, app_id: AppId) -> UnorderedSetMapper<EsdtTokenPayment<Self::Api>>;
 }

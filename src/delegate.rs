@@ -11,8 +11,8 @@ pub trait DelegateModule: app::AppModule {
         let transfers = self.call_value().all_esdt_transfers();
 
         require!(!transfers.is_empty(), "no delegations provided");
-        require!(self.app_ids().contains_id(app_id), "unknown app id");
         require!(!segment.is_empty(), "invalid segment");
+        self.require_app_exists(app_id);
 
         // TODO: check is data collection whitelisted for each transfer
 

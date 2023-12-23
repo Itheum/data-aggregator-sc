@@ -11,6 +11,10 @@ pub trait AppModule {
         app_id
     }
 
+    fn require_app_exists(&self, app_id: AppId) {
+        require!(self.app_ids().contains_id(app_id), "unknown app id");
+    }
+
     #[storage_mapper("app:ids")]
     fn app_ids(&self) -> AddressToIdMapper<Self::Api>;
 }

@@ -13,7 +13,5 @@ pub trait DataAggregator: config::ConfigModule + app::AppModule + category::Cate
     fn init(&self) {}
 
     #[upgrade]
-    fn upgrade(&self) {
-        self.init();
-    }
+    fn upgrade(&self) {}
 }

@@ -1,3 +1,5 @@
+use crate::app::AppId;
+
 multiversx_sc::imports!();
 
 #[multiversx_sc::module]
@@ -15,9 +17,9 @@ pub trait ConfigModule {
     }
 
     #[endpoint(addDataCollectionWhitelist)]
-    fn add_data_collection_whitelist(&self, token_identifier: TokenIdentifier) {
+    fn add_data_collection_whitelist(&self, app_id: AppId, token_identifier: TokenIdentifier) {
         self.require_caller_is_admin();
-        self.data_collection_whitelist().insert(token_identifier);
+        self.data_collection_whitelist(app_id).insert(token_identifier);
     }
 
     fn require_caller_is_admin(&self) {
@@ -27,10 +29,13 @@ pub trait ConfigModule {
         require!(is_admin || is_owner, "caller must be admin");
     }
 
+    #[storage_mapper("users")]
+    fn users(&self) -> UserMapper;
+
     #[view(getAdmins)]
     #[storage_mapper("config:admins")]
     fn admins(&self) -> UnorderedSetMapper<ManagedAddress>;
 
     #[storage_mapper("config:data_collection_whitelist")]
-    fn data_collection_whitelist(&self) -> UnorderedSetMapper<TokenIdentifier>;
+    fn data_collection_whitelist(&self, app_id: AppId) -> UnorderedSetMapper<TokenIdentifier>;
 }

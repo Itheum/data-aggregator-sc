@@ -1,4 +1,4 @@
-use crate::app::AppId;
+use crate::{app::AppId, delegate::Delegation};
 
 multiversx_sc::imports!();
 
@@ -27,6 +27,9 @@ pub trait ConfigModule {
     fn users(&self) -> UserMapper;
 
     #[view(getAdmins)]
-    #[storage_mapper("config:admins")]
+    #[storage_mapper("admins")]
     fn admins(&self) -> UnorderedSetMapper<ManagedAddress>;
+
+    #[storage_mapper("delegations")]
+    fn delegations(&self, app_id: AppId) -> MapMapper<usize, ManagedVec<Delegation<Self::Api>>>;
 }

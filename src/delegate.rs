@@ -92,7 +92,4 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
 
         self.delegations(app_id).insert(user, delegations);
     }
-
-    #[storage_mapper("delegate:delegations")]
-    fn delegations(&self, app_id: AppId) -> MapMapper<usize, ManagedVec<Delegation<Self::Api>>>;
 }

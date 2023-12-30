@@ -18,8 +18,7 @@ pub trait AppModule {
     fn register_app_endpoint(&self, name: ManagedBuffer, contract: OptionalValue<ManagedAddress>) -> AppId {
         let caller = self.blockchain().get_caller();
         let contract = contract.into_option().unwrap_or_default();
-        let app_address = if contract.is_zero() { &caller } else { &contract };
-        let app_id = self.app_ids().insert_new(&app_address);
+        let app_id = self.next_app_id().get();
         let current_time = self.blockchain().get_block_timestamp();
 
         if !contract.is_zero() {
@@ -79,7 +78,7 @@ pub trait AppModule {
     }
 
     fn require_app_exists(&self, app_id: AppId) {
-        require!(self.app_ids().contains_id(app_id), "unknown app id");
+        require!(!self.app_info(app_id).is_empty(), "unknown app id");
     }
 
     fn require_caller_is_app_manager(&self, app_id: AppId) {
@@ -93,8 +92,8 @@ pub trait AppModule {
         }
     }
 
-    #[storage_mapper("app:ids")]
-    fn app_ids(&self) -> AddressToIdMapper<Self::Api>;
+    #[storage_mapper("app:next_id")]
+    fn next_app_id(&self) -> SingleValueMapper<AppId>;
 
     #[storage_mapper("app:info")]
     fn app_info(&self, app_id: AppId) -> SingleValueMapper<AppInfo<Self::Api>>;

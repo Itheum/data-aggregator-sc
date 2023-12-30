@@ -75,8 +75,11 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
         require!(nft.token_nonce != 0, "must not be fungible");
         require!(nft.amount == 1, "must be single nft");
 
-        let is_whitelisted = self.data_collection_whitelist(app_id).contains(&nft.token_identifier);
-        require!(is_whitelisted, "data collection not whitelisted");
+        self.require_app_exists(app_id);
+        let app_info = self.app_info(app_id).get();
+
+        let is_allowed_collection = app_info.data_collections.contains(&nft.token_identifier);
+        require!(is_allowed_collection, "collection not allowed for app");
 
         let user = self.users().get_or_create_user(delegator);
         let mut delegations = self.delegations(app_id).get(&user).unwrap_or_default();

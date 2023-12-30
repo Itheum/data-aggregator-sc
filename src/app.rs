@@ -9,6 +9,7 @@ pub struct AppInfo<M: ManagedTypeApi> {
     pub creator: ManagedAddress<M>,
     pub created_at: u64,
     pub contract: ManagedAddress<M>,
+    pub data_collections: ManagedVec<M, TokenIdentifier<M>>,
 }
 
 #[multiversx_sc::module]
@@ -30,11 +31,34 @@ pub trait AppModule {
             creator: caller,
             created_at: current_time,
             contract,
+            data_collections: ManagedVec::new(),
         });
 
         app_id
     }
 
+    #[endpoint(addDataCollection)]
+    fn add_data_collection_endpoint(&self, app_id: AppId, collection: TokenIdentifier) {
+        self.require_caller_is_app_manager(app_id);
+
+        let mut app_info = self.app_info(app_id).get();
+        require!(!app_info.data_collections.contains(&collection), "collection already added");
+
+        app_info.data_collections.push(collection);
+        self.app_info(app_id).set(app_info);
+    }
+
+    #[endpoint(removeDataCollection)]
+    fn remove_data_collection_endpoint(&self, app_id: AppId, collection: TokenIdentifier) {
+        self.require_caller_is_app_manager(app_id);
+
+        let mut app_info = self.app_info(app_id).get();
+        let index = app_info.data_collections.iter().position(|c| *c == collection);
+        require!(index.is_some(), "collection not found");
+
+        app_info.data_collections.remove(index.unwrap());
+        self.app_info(app_id).set(app_info);
+    }
     fn process_app_undelegate(&self, app_id: AppId, delegator: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
         let app_info = self.app_info(app_id).get();
 
@@ -50,6 +74,17 @@ pub trait AppModule {
 
     fn require_app_exists(&self, app_id: AppId) {
         require!(self.app_ids().contains_id(app_id), "unknown app id");
+    }
+
+    fn require_caller_is_app_manager(&self, app_id: AppId) {
+        let caller = self.blockchain().get_caller();
+        let app_info = self.app_info(app_id).get();
+
+        if app_info.contract.is_zero() {
+            require!(app_info.creator == caller, "only creator can manage app");
+        } else {
+            require!(app_info.contract == caller, "only app contract can manage app");
+        }
     }
 
     #[storage_mapper("app:ids")]

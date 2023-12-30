@@ -59,6 +59,12 @@ pub trait AppModule {
         app_info.data_collections.remove(index.unwrap());
         self.app_info(app_id).set(app_info);
     }
+
+    #[view(getAppInfo)]
+    fn get_app_info_view(&self, app_id: AppId) -> AppInfo<Self::Api> {
+        self.app_info(app_id).get()
+    }
+
     fn process_app_undelegate(&self, app_id: AppId, delegator: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
         let app_info = self.app_info(app_id).get();
 

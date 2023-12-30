@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           10
+// Endpoints:                           12
 // Async Callback (empty):               1
-// Total number of exported functions:  12
+// Total number of exported functions:  14
 
 #![no_std]
 
@@ -25,9 +25,11 @@ multiversx_sc_wasm_adapter::endpoints! {
         upgrade => upgrade
         addAdmin => add_admin_endpoint
         removeAdmin => remove_admin_endpoint
-        addDataCollectionWhitelist => add_data_collection_whitelist
         getAdmins => admins
         registerApp => register_app_endpoint
+        addDataCollection => add_data_collection_endpoint
+        removeDataCollection => remove_data_collection_endpoint
+        getAppInfo => get_app_info_view
         delegate => delegate_endpoint
         undelegate => undelegate_endpoint
         getDelegations => get_delegations_view

@@ -1,3 +1,5 @@
+use crate::config;
+
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
@@ -13,7 +15,7 @@ pub struct AppInfo<M: ManagedTypeApi> {
 }
 
 #[multiversx_sc::module]
-pub trait AppModule {
+pub trait AppModule: config::ConfigModule {
     #[endpoint(registerApp)]
     fn register_app_endpoint(&self, name: ManagedBuffer, contract: OptionalValue<ManagedAddress>) -> AppId {
         let caller = self.blockchain().get_caller();
@@ -34,6 +36,15 @@ pub trait AppModule {
         });
 
         app_id
+    }
+
+    #[endpoint(unregisterApp)]
+    fn unregister_app_endpoint(&self, app_id: AppId) {
+        self.require_caller_is_app_manager(app_id);
+
+        require!(self.delegations(app_id).is_empty(), "app must not have active delegations");
+
+        self.app_info(app_id).clear();
     }
 
     #[endpoint(addDataCollection)]

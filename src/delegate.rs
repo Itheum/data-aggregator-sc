@@ -25,7 +25,10 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
         self.require_app_exists(app_id);
 
         let app_info = self.app_info(app_id).get();
-        require!(app_info.contract.is_zero(), "must delegate via app contract");
+
+        if !app_info.contract.is_zero() {
+            require!(caller == app_info.contract, "must delegate via app contract");
+        }
 
         for transfer in transfers.iter() {
             self.delegate_nft(app_id, &caller, transfer, segment.clone());

@@ -23,10 +23,6 @@ pub trait AppModule: config::ConfigModule {
         let app_id = self.next_app_id().get();
         let current_time = self.blockchain().get_block_timestamp();
 
-        if !contract.is_zero() {
-            require!(self.blockchain().is_smart_contract(&contract), "not a contract");
-        }
-
         self.app_info(app_id).set(AppInfo {
             name,
             creator: caller,

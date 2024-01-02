@@ -16,9 +16,9 @@ pub struct Delegation<M: ManagedTypeApi> {
 pub trait DelegateModule: config::ConfigModule + app::AppModule {
     #[payable("*")]
     #[endpoint(delegate)]
-    fn delegate_endpoint(&self, app_id: AppId, segment: ManagedBuffer) {
-        let caller = self.blockchain().get_caller();
+    fn delegate_endpoint(&self, app_id: AppId, segment: ManagedBuffer, user: OptionalValue<ManagedAddress>) {
         let transfers = self.call_value().all_esdt_transfers();
+        let delegator = user.into_option().unwrap_or_else(|| self.blockchain().get_caller());
 
         require!(!transfers.is_empty(), "no delegations provided");
         require!(!segment.is_empty(), "invalid segment");
@@ -27,11 +27,11 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
         let app_info = self.app_info(app_id).get();
 
         if self.blockchain().is_smart_contract(&app_info.manager) {
-            require!(caller == app_info.manager, "must delegate via app");
+            require!(delegator == app_info.manager, "must delegate via app");
         }
 
         for transfer in transfers.iter() {
-            self.delegate_nft(app_id, &caller, transfer, segment.clone());
+            self.delegate_nft(app_id, &delegator, transfer, segment.clone());
         }
     }
 

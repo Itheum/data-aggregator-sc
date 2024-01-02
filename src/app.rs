@@ -73,7 +73,7 @@ pub trait AppModule: config::ConfigModule {
     #[view(getApps)]
     fn get_apps_view(&self) -> MultiValueEncoded<AppInfo<Self::Api>> {
         let mut apps_multi = MultiValueEncoded::new();
-        let mut app_id = self.next_app_id().get();
+        let mut app_id = self.next_app_id().get() - 1;
 
         while app_id > 0 {
             apps_multi.push(self.app_info(app_id).get());

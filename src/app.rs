@@ -81,11 +81,6 @@ pub trait AppModule: config::ConfigModule {
         apps_multi
     }
 
-    #[view(getAppInfo)]
-    fn get_app_info_view(&self, app_id: AppId) -> AppInfo<Self::Api> {
-        self.app_info(app_id).get()
-    }
-
     fn add_data_collection(&self, app_id: AppId, collection: TokenIdentifier) {
         let mut app_info = self.app_info(app_id).get();
         require!(!app_info.data_collections.contains(&collection), "collection already added");

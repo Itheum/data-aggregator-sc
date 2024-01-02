@@ -37,21 +37,24 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
     }
 
     #[endpoint(undelegate)]
-    fn undelegate_endpoint(&self, app_id: AppId, collection: TokenIdentifier, nonce: u64) {
+    fn undelegate_endpoint(&self, app_id: AppId, nfts: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>) {
         self.require_app_exists(app_id);
         let caller = self.blockchain().get_caller();
         let user = self.users().get_user_id(&caller);
         let mut delegations = self.delegations(app_id).get(&user).unwrap_or_default();
-        let index = delegations.iter().position(|d| d.collection == collection && d.nonce == nonce);
-        require!(index.is_some(), "delegation not found");
 
-        delegations.remove(index.unwrap());
+        for nft in nfts.clone().into_iter() {
+            let (collection, nonce) = nft.into_tuple();
 
-        self.delegations(app_id).insert(user, delegations);
+            let index = delegations.iter().position(|d| d.collection == collection && d.nonce == nonce);
+            require!(index.is_some(), "delegation not found");
 
-        self.send().direct_esdt(&caller, &collection, nonce, &BigUint::from(1u8));
+            delegations.remove(index.unwrap());
 
-        self.process_app_undelegate(app_id, caller, collection, nonce);
+            self.send().direct_esdt(&caller, &collection, nonce, &BigUint::from(1u8));
+        }
+
+        self.process_app_undelegate(app_id, caller.clone(), nfts);
     }
 
     #[view(getDelegations)]

@@ -90,7 +90,7 @@ pub trait AppModule: config::ConfigModule {
         self.app_info(app_id).set(app_info);
     }
 
-    fn process_app_undelegate(&self, app_id: AppId, delegator: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
+    fn process_app_undelegate(&self, app_id: AppId, delegator: ManagedAddress, nfts: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>) {
         let app_info = self.app_info(app_id).get();
 
         if !self.blockchain().is_smart_contract(&app_info.manager) {
@@ -98,7 +98,7 @@ pub trait AppModule: config::ConfigModule {
         }
 
         self.app_contract(app_info.manager)
-            .handle_aggregator_undelegate_endpoint(delegator, collection, nonce)
+            .handle_aggregator_undelegate_endpoint(delegator, nfts)
             .async_call()
             .call_and_exit_ignore_callback();
     }
@@ -133,6 +133,10 @@ mod app_contract_proxy {
     #[multiversx_sc::proxy]
     pub trait DataAggregatorContractProxy {
         #[endpoint(handleAggregatorUndelegate)]
-        fn handle_aggregator_undelegate_endpoint(&self, delegator: ManagedAddress, collection: TokenIdentifier, nonce: u64);
+        fn handle_aggregator_undelegate_endpoint(
+            &self,
+            delegator: ManagedAddress,
+            nfts: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>,
+        );
     }
 }

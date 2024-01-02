@@ -18,7 +18,8 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
     #[endpoint(delegate)]
     fn delegate_endpoint(&self, app_id: AppId, segment: ManagedBuffer, user: OptionalValue<ManagedAddress>) {
         let transfers = self.call_value().all_esdt_transfers();
-        let delegator = user.into_option().unwrap_or_else(|| self.blockchain().get_caller());
+        let caller = self.blockchain().get_caller();
+        let delegator = user.into_option().unwrap_or_else(|| caller.clone());
 
         require!(!transfers.is_empty(), "no delegations provided");
         require!(!segment.is_empty(), "invalid segment");
@@ -27,7 +28,7 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
         let app_info = self.app_info(app_id).get();
 
         if self.blockchain().is_smart_contract(&app_info.manager) {
-            require!(delegator == app_info.manager, "must delegate via app");
+            require!(caller == app_info.manager, "must delegate via app");
         }
 
         for transfer in transfers.iter() {

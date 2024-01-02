@@ -7,7 +7,7 @@ multiversx_sc::derive_imports!();
 
 #[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, ManagedVecItem)]
 pub struct Delegation<M: ManagedTypeApi> {
-    pub id: TokenIdentifier<M>,
+    pub collection: TokenIdentifier<M>,
     pub nonce: u64,
     pub segment: ManagedBuffer<M>,
 }
@@ -42,7 +42,7 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
         let caller = self.blockchain().get_caller();
         let user = self.users().get_user_id(&caller);
         let mut delegations = self.delegations(app_id).get(&user).unwrap_or_default();
-        let index = delegations.iter().position(|d| d.id == collection && d.nonce == nonce);
+        let index = delegations.iter().position(|d| d.collection == collection && d.nonce == nonce);
         require!(index.is_some(), "delegation not found");
 
         delegations.remove(index.unwrap());
@@ -89,7 +89,7 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
         let mut delegations = self.delegations(app_id).get(&user).unwrap_or_default();
 
         delegations.push(Delegation {
-            id: nft.token_identifier,
+            collection: nft.token_identifier,
             nonce: nft.token_nonce,
             segment,
         });

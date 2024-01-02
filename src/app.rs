@@ -32,6 +32,8 @@ pub trait AppModule: config::ConfigModule {
             self.add_data_collection(app_id, collection);
         }
 
+        self.next_app_id().set(app_id + 1);
+
         app_id
     }
 

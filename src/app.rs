@@ -92,10 +92,10 @@ pub trait AppModule: config::ConfigModule {
         require!(app_info.manager == caller, "caller must be app manager");
     }
 
-    #[storage_mapper("app:next_id")]
+    #[storage_mapper("app_next_id")]
     fn next_app_id(&self) -> SingleValueMapper<AppId>;
 
-    #[storage_mapper("app:info")]
+    #[storage_mapper("app_info")]
     fn app_info(&self, app_id: AppId) -> SingleValueMapper<AppInfo<Self::Api>>;
 
     #[proxy]

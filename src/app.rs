@@ -114,12 +114,15 @@ pub trait AppModule: config::ConfigModule {
         require!(app_info.manager == caller, "caller must be app manager");
     }
 
+    #[view(getNextAppId)]
     #[storage_mapper("app_next_id")]
     fn next_app_id(&self) -> SingleValueMapper<AppId>;
 
+    #[view(getAppInfo)]
     #[storage_mapper("app_info")]
     fn app_info(&self, app_id: AppId) -> SingleValueMapper<AppInfo<Self::Api>>;
 
+    #[view(getDataCollectionDefaults)]
     #[storage_mapper("data_collections_defaults")]
     fn data_collection_defaults(&self) -> UnorderedSetMapper<TokenIdentifier<Self::Api>>;
 

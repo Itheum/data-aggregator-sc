@@ -8,26 +8,23 @@ pub type AppId = u64;
 #[derive(TypeAbi, TopEncode, TopDecode, NestedEncode, NestedDecode, ManagedVecItem)]
 pub struct AppInfo<M: ManagedTypeApi> {
     pub name: ManagedBuffer<M>,
-    pub creator: ManagedAddress<M>,
+    pub manager: ManagedAddress<M>,
     pub created_at: u64,
-    pub contract: ManagedAddress<M>,
     pub data_collections: ManagedVec<M, TokenIdentifier<M>>,
 }
 
 #[multiversx_sc::module]
 pub trait AppModule: config::ConfigModule {
     #[endpoint(registerApp)]
-    fn register_app_endpoint(&self, name: ManagedBuffer, contract: OptionalValue<ManagedAddress>) -> AppId {
+    fn register_app_endpoint(&self, name: ManagedBuffer) -> AppId {
         let caller = self.blockchain().get_caller();
-        let contract = contract.into_option().unwrap_or_default();
         let app_id = self.next_app_id().get();
         let current_time = self.blockchain().get_block_timestamp();
 
         self.app_info(app_id).set(AppInfo {
             name,
-            creator: caller,
+            manager: caller,
             created_at: current_time,
-            contract,
             data_collections: ManagedVec::new(),
         });
 
@@ -74,11 +71,11 @@ pub trait AppModule: config::ConfigModule {
     fn process_app_undelegate(&self, app_id: AppId, delegator: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
         let app_info = self.app_info(app_id).get();
 
-        if app_info.contract.is_zero() {
+        if !self.blockchain().is_smart_contract(&app_info.manager) {
             return;
         }
 
-        self.app_contract(app_info.contract)
+        self.app_contract(app_info.manager)
             .handle_aggregator_undelegate_endpoint(delegator, collection, nonce)
             .async_call()
             .call_and_exit_ignore_callback();
@@ -92,11 +89,7 @@ pub trait AppModule: config::ConfigModule {
         let caller = self.blockchain().get_caller();
         let app_info = self.app_info(app_id).get();
 
-        if app_info.contract.is_zero() {
-            require!(app_info.creator == caller, "only creator can manage app");
-        } else {
-            require!(app_info.contract == caller, "only app contract can manage app");
-        }
+        require!(app_info.manager == caller, "caller must be app manager");
     }
 
     #[storage_mapper("app:next_id")]

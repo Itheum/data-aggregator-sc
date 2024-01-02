@@ -26,8 +26,8 @@ pub trait DelegateModule: config::ConfigModule + app::AppModule {
 
         let app_info = self.app_info(app_id).get();
 
-        if !app_info.contract.is_zero() {
-            require!(caller == app_info.contract, "must delegate via app contract");
+        if self.blockchain().is_smart_contract(&app_info.manager) {
+            require!(caller == app_info.manager, "must delegate via app");
         }
 
         for transfer in transfers.iter() {

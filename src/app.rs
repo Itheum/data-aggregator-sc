@@ -28,7 +28,7 @@ pub trait AppModule: config::ConfigModule {
             data_collections: ManagedVec::new(),
         });
 
-        for collection in self.data_collection_defaults(app_id).iter() {
+        for collection in self.data_collection_defaults().iter() {
             self.add_data_collection(app_id, collection);
         }
 
@@ -57,15 +57,15 @@ pub trait AppModule: config::ConfigModule {
     }
 
     #[endpoint(addDefaultDataCollection)]
-    fn add_default_data_collection_endpoint(&self, app_id: AppId, collection: TokenIdentifier) {
+    fn add_default_data_collection_endpoint(&self, collection: TokenIdentifier) {
         self.require_caller_is_admin();
-        self.data_collection_defaults(app_id).insert(collection);
+        self.data_collection_defaults().insert(collection);
     }
 
     #[endpoint(removeDefaultDataCollection)]
-    fn remove_default_data_collection_endpoint(&self, app_id: AppId, collection: TokenIdentifier) {
+    fn remove_default_data_collection_endpoint(&self, collection: TokenIdentifier) {
         self.require_caller_is_admin();
-        self.data_collection_defaults(app_id).swap_remove(&collection);
+        self.data_collection_defaults().swap_remove(&collection);
     }
 
     #[view(getAppInfo)]
@@ -121,7 +121,7 @@ pub trait AppModule: config::ConfigModule {
     fn app_info(&self, app_id: AppId) -> SingleValueMapper<AppInfo<Self::Api>>;
 
     #[storage_mapper("data_collections_defaults")]
-    fn data_collection_defaults(&self, app_id: AppId) -> UnorderedSetMapper<TokenIdentifier<Self::Api>>;
+    fn data_collection_defaults(&self) -> UnorderedSetMapper<TokenIdentifier<Self::Api>>;
 
     #[proxy]
     fn app_contract(&self, to: ManagedAddress) -> app_contract_proxy::Proxy<Self::Api>;

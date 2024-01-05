@@ -7,6 +7,7 @@ pub type AppId = u64;
 
 #[derive(TypeAbi, TopEncode, TopDecode, NestedEncode, NestedDecode, ManagedVecItem)]
 pub struct AppInfo<M: ManagedTypeApi> {
+    pub id: AppId,
     pub name: ManagedBuffer<M>,
     pub manager: ManagedAddress<M>,
     pub created_at: u64,
@@ -22,6 +23,7 @@ pub trait AppModule: config::ConfigModule {
         let current_time = self.blockchain().get_block_timestamp();
 
         self.app_info(app_id).set(AppInfo {
+            id: app_id,
             name,
             manager: caller,
             created_at: current_time,

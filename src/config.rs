@@ -16,6 +16,12 @@ pub trait ConfigModule {
         self.admins().swap_remove(&address);
     }
 
+    #[endpoint(setDeputy)]
+    fn set_deputy_endpoint(&self, address: ManagedAddress) {
+        self.require_caller_is_admin();
+        self.deputy().set(address);
+    }
+
     fn require_caller_is_admin(&self) {
         let caller = self.blockchain().get_caller();
         let is_admin = self.admins().contains(&caller);
@@ -29,6 +35,10 @@ pub trait ConfigModule {
     #[view(getAdmins)]
     #[storage_mapper("admins")]
     fn admins(&self) -> UnorderedSetMapper<ManagedAddress>;
+
+    #[view(viewDeputyAddress)]
+    #[storage_mapper("deputy")]
+    fn deputy(&self) -> SingleValueMapper<ManagedAddress>;
 
     #[storage_mapper("delegations")]
     fn delegations(&self, app_id: AppId) -> MapMapper<usize, ManagedVec<Delegation<Self::Api>>>;
